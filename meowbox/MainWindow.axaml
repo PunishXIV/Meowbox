@@ -1,0 +1,156 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:meowbox"
+        x:Class="meowbox.MainWindow"
+        x:DataType="l:MainViewModel"
+        Title="meowbox" Width="960" Height="580">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Bottom" Padding="10,6" Background="{DynamicResource SystemControlBackgroundListLowBrush}">
+      <TextBlock Text="{Binding Status}" TextTrimming="CharacterEllipsis" />
+    </Border>
+
+    <TabControl TabStripPlacement="Left">
+
+      <TabItem Header="Instances">
+        <DockPanel Margin="8">
+          <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+            <Button Content="Add" Command="{Binding AddInstanceCommand}" />
+            <Button Content="Remove" Command="{Binding RemoveInstanceCommand}" />
+            <Button Content="Launch selected" Command="{Binding LaunchSelectedCommand}" />
+          </StackPanel>
+          <DataGrid ItemsSource="{Binding Instances}" SelectedItem="{Binding SelectedInstance}"
+                    AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
+            <DataGrid.Columns>
+              <DataGridTemplateColumn Width="76">
+                <DataGridTemplateColumn.Header>
+                  <CheckBox HorizontalAlignment="Center" ToolTip.Tip="Select all"
+                            IsChecked="{Binding $parent[Window].((l:MainViewModel)DataContext).AllSelected, Mode=TwoWay}" />
+                </DataGridTemplateColumn.Header>
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Instance">
+                    <CheckBox IsChecked="{Binding Selected}" HorizontalAlignment="Center" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTextColumn Header="Name" Width="*" Binding="{Binding Name, x:DataType=l:Instance}" />
+              <DataGridTemplateColumn Header="Account" Width="190">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Instance">
+                    <ComboBox Margin="2" HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding $parent[Window].((l:MainViewModel)DataContext).Accounts}"
+                              SelectedValue="{Binding AccountId}"
+                              SelectedValueBinding="{Binding Id, x:DataType=l:Account}"
+                              DisplayMemberBinding="{Binding Label, x:DataType=l:Account}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTemplateColumn Header="Environment" Width="190">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Instance">
+                    <ComboBox Margin="2" HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding $parent[Window].((l:MainViewModel)DataContext).Envs}"
+                              SelectedValue="{Binding EnvId}"
+                              SelectedValueBinding="{Binding Id, x:DataType=l:Env}"
+                              DisplayMemberBinding="{Binding Name, x:DataType=l:Env}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTemplateColumn Width="90">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Instance">
+                    <Button Margin="2" Content="Launch"
+                            Command="{Binding $parent[Window].((l:MainViewModel)DataContext).LaunchCommand}"
+                            CommandParameter="{Binding}" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Accounts">
+        <DockPanel Margin="8">
+          <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+            <Button Content="Add" Command="{Binding AddAccountCommand}" />
+            <Button Content="Remove" Command="{Binding RemoveAccountCommand}" />
+          </StackPanel>
+          <DataGrid ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
+                    AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Label" Width="*" Binding="{Binding Label, x:DataType=l:Account}" />
+              <DataGridTextColumn Header="Username" Width="*" Binding="{Binding Username, x:DataType=l:Account}" />
+              <DataGridTemplateColumn Header="Password" Width="170">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Account">
+                    <TextBox Margin="2" Text="{Binding Password}" PasswordChar="●" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTemplateColumn Header="TOTP secret" Width="170">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Account">
+                    <TextBox Margin="2" Text="{Binding TotpSecret}" PasswordChar="●" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTemplateColumn Header="Copy" Width="185">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Account">
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="2">
+                      <Button Content="User" Tag="{Binding Username}" Click="Copy" />
+                      <Button Content="Pass" Tag="{Binding Password}" Click="Copy" />
+                      <Button Content="OTP" Click="CopyOtp"
+                              IsEnabled="{Binding TotpSecret, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Environments">
+        <DockPanel Margin="8">
+          <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+            <Button Content="Add" Command="{Binding AddEnvCommand}" />
+            <Button Content="Remove" Command="{Binding RemoveEnvCommand}" />
+          </StackPanel>
+          <DataGrid ItemsSource="{Binding Envs}" SelectedItem="{Binding SelectedEnv}"
+                    AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Name" Width="220" Binding="{Binding Name, x:DataType=l:Env}" />
+              <DataGridTextColumn Header="Roaming path" Width="*" Binding="{Binding RoamingPath, x:DataType=l:Env}" />
+              <DataGridTemplateColumn Width="90">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Env">
+                    <Button Margin="2" Content="Browse" Click="Browse" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Settings">
+        <StackPanel Margin="16" Spacing="10">
+          <TextBlock Text="Login timeout (seconds)" FontWeight="SemiBold" />
+          <NumericUpDown Width="160" HorizontalAlignment="Left" Minimum="1" Maximum="600"
+                         Increment="1" FormatString="0" Value="{Binding Settings.LoginTimeoutSeconds}" />
+          <TextBlock TextWrapping="Wrap" MaxWidth="560" Opacity="0.7"
+                     Text="Budget for the whole sign-in: waiting for the launcher window, filling the form, and answering the OTP dialog. When it runs out meowbox gives up on that instance and frees the Launch button. Raise it if a cold launcher start is slower than this." />
+
+          <TextBlock Text="Delay between launches (seconds)" FontWeight="SemiBold" Margin="0,12,0,0" />
+          <NumericUpDown Width="160" HorizontalAlignment="Left" Minimum="0" Maximum="600"
+                         Increment="1" FormatString="0" Value="{Binding Settings.LaunchDelaySeconds}" />
+          <TextBlock TextWrapping="Wrap" MaxWidth="560" Opacity="0.7"
+                     Text="Extra pause between clients in Launch selected. This is on top of waiting for each sign-in to finish, not instead of it, so 0 still means one client at a time." />
+        </StackPanel>
+      </TabItem>
+
+    </TabControl>
+  </DockPanel>
+</Window>
