@@ -3,6 +3,7 @@
         xmlns:l="clr-namespace:meowbox"
         x:Class="meowbox.MainWindow"
         x:DataType="l:MainViewModel"
+        Icon="avares://meowbox/icon.ico"
         Title="meowbox" Width="960" Height="580">
 
   <DockPanel>
