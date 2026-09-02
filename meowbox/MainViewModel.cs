@@ -22,12 +22,34 @@ public partial class MainViewModel : ObservableObject
     private bool _sweeping;
     private string? _lastSweepError;
 
-    public bool? AllSelected
+    public bool? AllInstancesChecked
     {
         get => Instances.Count > 0 && Instances.All(i => i.Selected) ? true
              : Instances.Any(i => i.Selected) ? null : false;
         set { if(value is bool b) foreach(var i in Instances) i.Selected = b; }
     }
+
+    public bool? AllAccountsChecked
+    {
+        get => Accounts.Count > 0 && Accounts.All(a => a.Selected) ? true
+             : Accounts.Any(a => a.Selected) ? null : false;
+        set { if(value is bool b) foreach(var a in Accounts) a.Selected = b; }
+    }
+
+    public bool? AllEnvsChecked
+    {
+        get => Envs.Count > 0 && Envs.All(e => e.Selected) ? true
+             : Envs.Any(e => e.Selected) ? null : false;
+        set { if(value is bool b) foreach(var e in Envs) e.Selected = b; }
+    }
+
+    public int CheckedInstanceCount => Instances.Count(i => i.Selected);
+    public int CheckedAccountCount => Accounts.Count(a => a.Selected);
+    public int CheckedEnvCount => Envs.Count(e => e.Selected);
+
+    public bool AnyInstanceChecked => CheckedInstanceCount > 0;
+    public bool AnyAccountChecked => CheckedAccountCount > 0;
+    public bool AnyEnvChecked => CheckedEnvCount > 0;
 
     public MainViewModel()
     {
@@ -47,9 +69,22 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand] private void AddAccount() => Accounts.Add(new());
     [RelayCommand] private void AddEnv() => Envs.Add(new());
     [RelayCommand] private void AddInstance() => Instances.Add(new());
-    [RelayCommand] private void RemoveAccount() { if(SelectedAccount is { } a) Accounts.Remove(a); }
-    [RelayCommand] private void RemoveEnv() { if(SelectedEnv is { } e) Envs.Remove(e); }
-    [RelayCommand] private void RemoveInstance() { if(SelectedInstance is { } i) Instances.Remove(i); }
+    
+    public void RemoveCheckedAccounts() => RemoveChecked(Accounts, a => a.Selected);
+    public void RemoveCheckedEnvs() => RemoveChecked(Envs, e => e.Selected);
+    public void RemoveCheckedInstances() => RemoveChecked(Instances, i => i.Selected);
+
+    private static void RemoveChecked<T>(ObservableCollection<T> c, Func<T, bool> isChecked)
+    {
+        foreach(var x in c.Where(isChecked).ToList()) c.Remove(x);
+    }
+
+    public string Merge(List<Account> incoming)
+    {
+        var added = incoming.Where(a => Accounts.All(x => x.Id != a.Id)).ToList();
+        foreach(var a in added) Accounts.Add(a);
+        return $"imported {added.Count}, skipped {incoming.Count - added.Count} already present";
+    }
 
     [RelayCommand]
     private async Task Launch(Instance? inst)
@@ -80,7 +115,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
     
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanLaunchSelected))]
     private async Task LaunchSelected()
     {
         var selected = Instances.Where(x => x.Selected).ToList();
@@ -91,6 +126,8 @@ public partial class MainViewModel : ObservableObject
             if(i < selected.Count - 1) await Task.Delay(TimeSpan.FromSeconds(Math.Max(0, Settings.LaunchDelaySeconds)));
         }
     }
+
+    private bool CanLaunchSelected => CheckedInstanceCount > 0;
     
     private async void Sweep(object? sender, EventArgs e)
     {
@@ -115,15 +152,41 @@ public partial class MainViewModel : ObservableObject
         {
             foreach(ObservableObject i in e.OldItems ?? Array.Empty<object>()) i.PropertyChanged -= OnDirty;
             foreach(ObservableObject i in e.NewItems ?? Array.Empty<object>()) i.PropertyChanged += OnDirty;
-            OnPropertyChanged(nameof(AllSelected));
+            InstancesChecked();
+            AccountsChecked();
+            EnvsChecked();
             Save();
         };
     }
     
     private void OnDirty(object? sender, PropertyChangedEventArgs e)
     {
-        if(e.PropertyName == nameof(Instance.Selected)) OnPropertyChanged(nameof(AllSelected));
-        else Save();
+        if(e.PropertyName != nameof(Instance.Selected)) { Save(); return; }
+        if(sender is Account) AccountsChecked();
+        else if(sender is Env) EnvsChecked();
+        else InstancesChecked();
+    }
+
+    private void InstancesChecked()
+    {
+        OnPropertyChanged(nameof(AllInstancesChecked));
+        OnPropertyChanged(nameof(CheckedInstanceCount));
+        OnPropertyChanged(nameof(AnyInstanceChecked));
+        LaunchSelectedCommand.NotifyCanExecuteChanged();
+    }
+
+    private void AccountsChecked()
+    {
+        OnPropertyChanged(nameof(AllAccountsChecked));
+        OnPropertyChanged(nameof(CheckedAccountCount));
+        OnPropertyChanged(nameof(AnyAccountChecked));
+    }
+
+    private void EnvsChecked()
+    {
+        OnPropertyChanged(nameof(AllEnvsChecked));
+        OnPropertyChanged(nameof(CheckedEnvCount));
+        OnPropertyChanged(nameof(AnyEnvChecked));
     }
 
     private void Save() => Store.Save(new([.. Accounts], [.. Envs], [.. Instances], Settings));

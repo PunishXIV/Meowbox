@@ -17,8 +17,10 @@
         <DockPanel Margin="8">
           <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
             <Button Content="Add" Command="{Binding AddInstanceCommand}" />
-            <Button Content="Remove" Command="{Binding RemoveInstanceCommand}" />
-            <Button Content="Launch selected" Command="{Binding LaunchSelectedCommand}" />
+            <Button Content="{Binding CheckedInstanceCount, StringFormat='Remove ({0})'}"
+                    IsEnabled="{Binding AnyInstanceChecked}" Click="RemoveInstances" />
+            <Button Content="{Binding CheckedInstanceCount, StringFormat='Launch ({0})'}"
+                    Command="{Binding LaunchSelectedCommand}" />
           </StackPanel>
           <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
                      Text="An instance pairs an account with an environment." />
@@ -28,7 +30,7 @@
               <DataGridTemplateColumn Width="76">
                 <DataGridTemplateColumn.Header>
                   <CheckBox HorizontalAlignment="Center" ToolTip.Tip="Select all"
-                            IsChecked="{Binding $parent[Window].((l:MainViewModel)DataContext).AllSelected, Mode=TwoWay}" />
+                            IsChecked="{Binding $parent[Window].((l:MainViewModel)DataContext).AllInstancesChecked, Mode=TwoWay}" />
                 </DataGridTemplateColumn.Header>
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate x:DataType="l:Instance">
@@ -77,13 +79,25 @@
         <DockPanel Margin="8">
           <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
             <Button Content="Add" Command="{Binding AddAccountCommand}" />
-            <Button Content="Remove" Command="{Binding RemoveAccountCommand}" />
+            <Button Content="{Binding CheckedAccountCount, StringFormat='Remove ({0})'}"
+                    IsEnabled="{Binding AnyAccountChecked}" Click="RemoveAccounts" />
           </StackPanel>
           <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
                      Text="Your SE/FFXIV service account login. TOTP Secret is optional." />
           <DataGrid ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
                     AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
             <DataGrid.Columns>
+              <DataGridTemplateColumn Width="76">
+                <DataGridTemplateColumn.Header>
+                  <CheckBox HorizontalAlignment="Center" ToolTip.Tip="Select all"
+                            IsChecked="{Binding $parent[Window].((l:MainViewModel)DataContext).AllAccountsChecked, Mode=TwoWay}" />
+                </DataGridTemplateColumn.Header>
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Account">
+                    <CheckBox IsChecked="{Binding Selected}" HorizontalAlignment="Center" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
               <DataGridTextColumn Header="Label" Width="*" Binding="{Binding Label, x:DataType=l:Account}" />
               <DataGridTextColumn Header="Username" Width="*" Binding="{Binding Username, x:DataType=l:Account}" />
               <DataGridTemplateColumn Header="Password" Width="170">
@@ -121,13 +135,25 @@
         <DockPanel Margin="8">
           <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
             <Button Content="Add" Command="{Binding AddEnvCommand}" />
-            <Button Content="Remove" Command="{Binding RemoveEnvCommand}" />
+            <Button Content="{Binding CheckedEnvCount, StringFormat='Remove ({0})'}"
+                    IsEnabled="{Binding AnyEnvChecked}" Click="RemoveEnvs" />
           </StackPanel>
           <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
                      Text="An XIVLauncher data folder; stores its own settings, Dalamud install, and plugin configs." />
           <DataGrid ItemsSource="{Binding Envs}" SelectedItem="{Binding SelectedEnv}"
                     AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
             <DataGrid.Columns>
+              <DataGridTemplateColumn Width="76">
+                <DataGridTemplateColumn.Header>
+                  <CheckBox HorizontalAlignment="Center" ToolTip.Tip="Select all"
+                            IsChecked="{Binding $parent[Window].((l:MainViewModel)DataContext).AllEnvsChecked, Mode=TwoWay}" />
+                </DataGridTemplateColumn.Header>
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate x:DataType="l:Env">
+                    <CheckBox IsChecked="{Binding Selected}" HorizontalAlignment="Center" />
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
               <DataGridTextColumn Header="Name" Width="220" Binding="{Binding Name, x:DataType=l:Env}" />
               <DataGridTextColumn Header="Roaming path" Width="*" Binding="{Binding RoamingPath, x:DataType=l:Env}" />
               <DataGridTemplateColumn Width="90">

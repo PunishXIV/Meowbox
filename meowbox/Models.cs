@@ -18,6 +18,8 @@ public partial class Account : ObservableObject
 
     [JsonPropertyName("totp")]
     public string TotpEnc { get => Dpapi.Protect(TotpSecret); set => TotpSecret = Dpapi.Unprotect(value); }
+
+    [ObservableProperty][property: JsonIgnore] private bool _selected;
 }
 
 public partial class Env : ObservableObject
@@ -25,6 +27,7 @@ public partial class Env : ObservableObject
     public Guid Id { get; set; } = Guid.NewGuid();
     [ObservableProperty] private string _name = "New environment";
     [ObservableProperty] private string _roamingPath = "";
+    [ObservableProperty][property: JsonIgnore] private bool _selected;
 }
 
 public partial class Instance : ObservableObject

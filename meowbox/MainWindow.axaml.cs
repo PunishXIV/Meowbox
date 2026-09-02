@@ -30,6 +30,33 @@ public partial class MainWindow : Window
         }
     }
 
+    private void RemoveInstances(object? sender, RoutedEventArgs e) =>
+        ConfirmRemove("instances", vm => vm.CheckedInstanceCount, vm => vm.RemoveCheckedInstances());
+
+    private void RemoveAccounts(object? sender, RoutedEventArgs e) =>
+        ConfirmRemove("accounts", vm => vm.CheckedAccountCount, vm => vm.RemoveCheckedAccounts());
+
+    private void RemoveEnvs(object? sender, RoutedEventArgs e) =>
+        ConfirmRemove("environments", vm => vm.CheckedEnvCount, vm => vm.RemoveCheckedEnvs());
+
+    private async void ConfirmRemove(string plural, Func<MainViewModel, int> count, Action<MainViewModel> remove)
+    {
+        if(DataContext is not MainViewModel vm) return;
+
+        try
+        {
+            var n = count(vm);
+            if(n == 0) return;
+
+            var noun = n == 1 ? plural[..^1] : plural;
+            if(!await ConfirmWindow.Ask(this, $"Remove {plural}", $"Remove {n} {noun}?")) return;
+
+            remove(vm);
+            vm.Status = $"removed {n} {noun}";
+        }
+        catch(Exception ex) { vm.Status = $"remove failed: {ex.Message}"; }
+    }
+
     private async void Browse(object? sender, RoutedEventArgs e)
     {
         if(sender is not Button { DataContext: Env env }) return;
