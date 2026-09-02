@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
@@ -55,6 +56,61 @@ public partial class MainWindow : Window
             vm.Status = $"removed {n} {noun}";
         }
         catch(Exception ex) { vm.Status = $"remove failed: {ex.Message}"; }
+    }
+
+    private static readonly FilePickerFileType MeowboxFile =
+        new("meowbox export") { Patterns = ["*.meowbox"] };
+
+    private async void ExportAccounts(object? sender, RoutedEventArgs e)
+    {
+        if(DataContext is not MainViewModel vm) return;
+
+        try
+        {
+            var accounts = vm.Accounts.Where(a => a.Selected).ToList();
+            if(accounts.Count == 0) return;
+
+            if(await PassphraseWindow.Ask(this, $"Passphrase to encrypt {accounts.Count} account(s)", confirm: true) is not { } pass) return;
+
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = "Export accounts", SuggestedFileName = "accounts.meowbox",
+                DefaultExtension = "meowbox", FileTypeChoices = [MeowboxFile],
+            });
+            if(file is null) return;
+
+            vm.Status = "exporting...";
+            var blob = await Task.Run(() => Portable.Export(accounts, pass));
+            await using(var stream = await file.OpenWriteAsync())
+            await using(var writer = new StreamWriter(stream)) await writer.WriteAsync(blob);
+            vm.Status = $"exported {accounts.Count} account(s) to {file.Name}";
+        }
+        catch(Exception ex) { vm.Status = $"export failed: {ex.Message}"; }
+    }
+
+    private async void ImportAccounts(object? sender, RoutedEventArgs e)
+    {
+        if(DataContext is not MainViewModel vm) return;
+
+        try
+        {
+            var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Import accounts", AllowMultiple = false, FileTypeFilter = [MeowboxFile],
+            });
+            if(picked.Count == 0) return;
+
+            if(await PassphraseWindow.Ask(this, $"Passphrase for {picked[0].Name}", confirm: false) is not { } pass) return;
+
+            vm.Status = "importing...";
+            string blob;
+            await using(var stream = await picked[0].OpenReadAsync())
+            using(var reader = new StreamReader(stream)) blob = await reader.ReadToEndAsync();
+
+            vm.Status = vm.Merge(await Task.Run(() => Portable.Import(blob, pass)));
+        }
+        catch(CryptographicException) { vm.Status = "import: wrong passphrase or corrupt file"; }
+        catch(Exception ex) { vm.Status = $"import failed: {ex.Message}"; }
     }
 
     private async void Browse(object? sender, RoutedEventArgs e)

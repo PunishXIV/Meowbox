@@ -81,6 +81,9 @@
             <Button Content="Add" Command="{Binding AddAccountCommand}" />
             <Button Content="{Binding CheckedAccountCount, StringFormat='Remove ({0})'}"
                     IsEnabled="{Binding AnyAccountChecked}" Click="RemoveAccounts" />
+            <Button Content="{Binding CheckedAccountCount, StringFormat='Export ({0})'}"
+                    IsEnabled="{Binding AnyAccountChecked}" Click="ExportAccounts" />
+            <Button Content="Import" Click="ImportAccounts" />
           </StackPanel>
           <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
                      Text="Your SE/FFXIV service account login. TOTP Secret is optional." />
