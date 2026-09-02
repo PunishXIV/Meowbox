@@ -20,6 +20,8 @@
             <Button Content="Remove" Command="{Binding RemoveInstanceCommand}" />
             <Button Content="Launch selected" Command="{Binding LaunchSelectedCommand}" />
           </StackPanel>
+          <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
+                     Text="An instance pairs an account with an environment." />
           <DataGrid ItemsSource="{Binding Instances}" SelectedItem="{Binding SelectedInstance}"
                     AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
             <DataGrid.Columns>
@@ -77,6 +79,8 @@
             <Button Content="Add" Command="{Binding AddAccountCommand}" />
             <Button Content="Remove" Command="{Binding RemoveAccountCommand}" />
           </StackPanel>
+          <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
+                     Text="Your SE/FFXIV service account login. TOTP Secret is optional." />
           <DataGrid ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
                     AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
             <DataGrid.Columns>
@@ -89,7 +93,7 @@
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
               </DataGridTemplateColumn>
-              <DataGridTemplateColumn Header="TOTP secret" Width="170">
+              <DataGridTemplateColumn Header="TOTP Secret" Width="170">
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate x:DataType="l:Account">
                     <TextBox Margin="2" Text="{Binding TotpSecret}" PasswordChar="●" />
@@ -119,6 +123,8 @@
             <Button Content="Add" Command="{Binding AddEnvCommand}" />
             <Button Content="Remove" Command="{Binding RemoveEnvCommand}" />
           </StackPanel>
+          <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7" TextWrapping="Wrap"
+                     Text="An XIVLauncher data folder; stores its own settings, Dalamud install, and plugin configs." />
           <DataGrid ItemsSource="{Binding Envs}" SelectedItem="{Binding SelectedEnv}"
                     AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False">
             <DataGrid.Columns>
